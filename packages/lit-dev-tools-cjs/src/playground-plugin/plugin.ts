@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -89,7 +90,11 @@ const countVisibleLines = (filename: string, code: string): number => {
  */
 export const playgroundPlugin = (
   eleventyConfig: EleventyConfig,
-  {sandboxUrl, isDevMode}: {sandboxUrl: string; isDevMode: boolean}
+  {
+    sandboxUrl,
+    isDevMode,
+    cdnBaseUrl,
+  }: {sandboxUrl: string; isDevMode: boolean; cdnBaseUrl: string}
 ) => {
   let renderer: BlockingRenderer | undefined;
 
@@ -105,7 +110,11 @@ export const playgroundPlugin = (
     }
   });
 
-  const render = (code: string, lang: 'js' | 'ts' | 'html' | 'css') => {
+  const render = (
+    code: string,
+    lang: 'js' | 'ts' | 'html' | 'css',
+    makePre = false
+  ) => {
     if (!renderer) {
       throw new Error(
         'Internal error: expected Playground renderer to have been ' +
@@ -113,6 +122,15 @@ export const playgroundPlugin = (
       );
     }
     const {html} = renderer.render(lang, outdent`${code}`);
+
+    // need to turn lines into pre tags to prevent minification in prod build
+    if (makePre) {
+      return html.replace(
+        /<div class="cm-line">(.*?)<\/div>/g,
+        '<pre class="cm-line">$1</pre>'
+      );
+    }
+
     return html;
   };
 
@@ -156,7 +174,8 @@ export const playgroundPlugin = (
 
   eleventyConfig.addPairedShortcode(
     'highlight',
-    (code: string, lang: 'js' | 'ts' | 'html' | 'css') => render(code, lang)
+    (code: string, lang: 'js' | 'ts' | 'html' | 'css', makePre = false) =>
+      render(code, lang, makePre)
   );
 
   eleventyConfig.addMarkdownHighlighter(
@@ -185,6 +204,7 @@ export const playgroundPlugin = (
       // the closing tag correctly because it will be in a  `<p>></p>`.
       return `
     <litdev-example ${sandboxUrl ? `sandbox-base-url="${sandboxUrl}"` : ''}
+      ${cdnBaseUrl ? `cdn-base-url="${cdnBaseUrl}"` : ''}
       style="--litdev-example-editor-lines-ts:${numVisibleLines.ts};
              --litdev-example-editor-lines-js:${numVisibleLines.js};
              --litdev-example-preview-height:${previewHeight};"
@@ -227,6 +247,7 @@ export const playgroundPlugin = (
       const previewHeight = config.previewHeight ?? '120px';
       return `
       <litdev-example ${sandboxUrl ? `sandbox-base-url='${sandboxUrl}'` : ''}
+        ${cdnBaseUrl ? `cdn-base-url="${cdnBaseUrl}"` : ''}
         style="--litdev-example-editor-lines-ts:${numVisibleLines.ts};
                --litdev-example-editor-lines-js:${numVisibleLines.js};
                --litdev-example-preview-height:${previewHeight}"

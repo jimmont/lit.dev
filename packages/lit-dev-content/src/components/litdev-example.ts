@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -140,6 +141,12 @@ export class LitDevExample extends LitElement {
   @property({attribute: 'sandbox-base-url'})
   sandboxBaseUrl?: string;
 
+  /**
+   * Base URL for CDN.
+   */
+  @property({attribute: 'cdn-base-url'})
+  cdnBaseUrl?: string;
+
   override connectedCallback() {
     super.connectedCallback();
     window.addEventListener(
@@ -190,6 +197,7 @@ export class LitDevExample extends LitElement {
           // will load its serviceworker on firstUpdated
           html`<playground-project
             sandbox-base-url=${ifDefined(this.sandboxBaseUrl)}
+            cdn-base-url=${ifDefined(this.cdnBaseUrl)}
             id="project"
             project-src=${projectSrc}
           >

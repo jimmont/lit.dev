@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project
  * Copyright 2022 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -90,7 +91,7 @@ export const indexTutorials = async (
       // Remove all code samples from the description – they might pollute
       // the search results.
       jsdoc.window.document
-        .querySelectorAll('figure.CodeMirror')
+        .querySelectorAll('figure.cm-editor')
         .forEach((el) => {
           el.remove();
         });
